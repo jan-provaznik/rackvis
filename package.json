@@ -1,0 +1,22 @@
+{
+  "dependencies": {
+    "bluebird": "^3.7.2",
+    "classnames": "^2.2.6",
+    "d3": "^6.5.0",
+    "d3-svg-to-png": "^0.1.6"
+  },
+  "scripts": {
+    "client:serve": "parcel source/index.html --no-autoinstall -d .build/runtime",
+    "client:build": "parcel build source/index.html --no-autoinstall --no-minify -d build --public-url ./"
+  },
+  "browserslist": [
+    "last 1 Chrome version"
+  ],
+  "alias": {
+    "vis": "./source/es6"
+  },
+  "devDependencies": {
+    "parcel": "^1.12.4",
+    "sass": "^1.32.5"
+  }
+}
