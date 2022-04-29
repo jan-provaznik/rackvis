@@ -13,6 +13,6 @@ import portvisBootstrap
 window.addEventListener('load', bootstrap);
 function bootstrap (event) {
   rackvisBootstrap();
-  portvisBootstrap();
+  //portvisBootstrap();
 }
 

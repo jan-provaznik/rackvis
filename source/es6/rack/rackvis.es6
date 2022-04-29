@@ -8,19 +8,76 @@ import createExporter
 
 export default function rackvisBootstrap () {
 
-  let rackvis = d3.select('.root')
+  let rackbit = d3.select('.root')
+    .append('div')
+      .classed('rackbit', true);
+
+  let editbit = rackbit
+    .append('div')
+      .classed('editor', true);
+
+  let rackvis = rackbit
     .append('div')
       .classed('rackvis', true);
 
-  rackvis.append('h1')
-    .text('rack 4.112');
-  rackvis.append('button')
-    .text('export')
-    .call(createExporter, rackvis, 'rackvis-4.112');
+  // This hacked-together monstrosity
 
-  rackvis
-    .call(visualiseRack4112);
+  let controlExport = editbit.append('label')
+    .text('Export name (optional)')
+    .append('input')
+      .attr('placeholder', 'Export name, optional');
+  let controlHeight = editbit.append('label')
+    .text('Rack height (optional)')
+    .append('input')
+      .attr('type', 'number')
+      .attr('placeholder', 'Rack height, guessed if unset');
+  let controlDefine = editbit.append('textarea')
+    .attr('placeholder', 'Rack definition');
+  let controlButton = editbit.append('button')
+    .text('Visualise')
+    .on('click', function (event) {
+      // Remove previous visualisation
+      rackvis.selectAll('*').remove();
 
+      // Parse definition, visualise
+      try {
+        let rawExport = controlExport.node().value;
+        let rawHeight = controlHeight.node().value;
+        let rawDefine = controlDefine.node().value;
+
+        // Kaboom?
+
+        let height = Number.parseInt(rawHeight);
+        let define = JSON.parse(rawDefine);
+
+        // Guess height if not set
+
+        if (! height) {
+          height = define.reduce(function (height, device) {
+            let value = device.beg + device.use;
+            return value > height ? value : height;
+          }, 0);
+        }
+
+        // Visualise
+
+        let exportName = rawExport 
+          ? 'rackvis-' + rawExport 
+          : 'rackvis';
+
+        rackvis.append('button')
+          .text('export')
+          .call(createExporter, rackvis, exportName);
+
+        visualiseRackContents(rackvis, height, define);
+
+      }
+      catch (ex) {
+        console.error(ex);
+      }
+    });
+
+  visualiseRack4112();
 }
 
 function visualiseRack4112 (selection) {
@@ -55,9 +112,12 @@ function visualiseRack4112 (selection) {
     { beg: 41, use: 1, label: 'CRS326-24S+2Q+RM' },
   ];
 
-  selection.each(function (d) {
-    visualiseRackContents(d3.select(this), 42, contents);
-  });
+  //selection.each(function (d) {
+  //  visualiseRackContents(d3.select(this), 42, contents);
+  //});
+
+  let s = JSON.stringify(contents, null, 2);
+  console.log(s)
 }
 
 function visualiseRackContents (root, units, data) {

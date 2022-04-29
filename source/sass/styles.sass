@@ -1,8 +1,10 @@
+*
+  box-sizing: border-box
+  margin: 0
+  padding: 0
+
 body
   background: #efefef
-
-.root
-  padding: 1rem
 
 .portvis,
 .rackvis
@@ -33,6 +35,56 @@ body
     display: block
     overflow: hidden
 
-.portvis + *
-  margin-top: 3rem
+.root
+  display: flex
+  flex-direction: column
+  min-height: 100vh
 
+.rackbit
+  display: flex
+  flex-direction: row
+  flex-grow: 2
+
+  .editor
+    display: flex
+    flex-direction: column
+
+    width: 50%
+    max-height: 100vh
+
+    textarea
+      flex-grow: 2
+
+    button
+      padding: 0.5rem
+      border: 0
+      border-radius: 5px
+
+      background: #33C3F0
+      color: #fff
+
+      font-weight: bold
+      font-family: sans-serif
+      text-transform: uppercase
+      letter-spacing: 2px
+
+
+    button:hover
+      background: #776b98
+
+    * + *
+      margin-top: 1rem
+
+    label
+      display: flex
+      flex-direction: column
+      font-family: sans-serif
+
+      input
+        margin-top: 0.5rem
+        padding: 0.5rem
+
+
+  .editor,
+  .rackvis
+    padding: 1rem
