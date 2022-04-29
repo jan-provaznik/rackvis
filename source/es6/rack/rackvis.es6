@@ -26,13 +26,29 @@ export default function rackvisBootstrap () {
     .text('Export name (optional)')
     .append('input')
       .attr('placeholder', 'Export name, optional');
+
   let controlHeight = editbit.append('label')
     .text('Rack height (optional)')
     .append('input')
       .attr('type', 'number')
       .attr('placeholder', 'Rack height, guessed if unset');
+
+  let controlPredef = editbit.append('div')
+    .classed('predef', true);
+
   let controlDefine = editbit.append('textarea')
     .attr('placeholder', 'Rack definition');
+
+  //
+
+  for (let predef of [ '4.112', '4.061a' ]) {
+    controlPredef.append('button')
+      .text(predef)
+      .on('click', usePredef(predef, controlDefine, controlExport, '4.112'));
+  }
+
+  //
+
   let controlButton = editbit.append('button')
     .text('Visualise')
     .on('click', function (event) {
@@ -66,7 +82,7 @@ export default function rackvisBootstrap () {
           : 'rackvis';
 
         rackvis.append('button')
-          .text('export')
+          .text('Export PNG')
           .call(createExporter, rackvis, exportName);
 
         visualiseRackContents(rackvis, height, define);
@@ -77,10 +93,26 @@ export default function rackvisBootstrap () {
       }
     });
 
-  visualiseRack4112();
 }
 
-function visualiseRack4112 (selection) {
+function usePredef (predef, controlDefine, controlExport) {
+  let define = '';
+  let registry = {
+    '4.112'  : predefRack4112,
+    '4.061a' : predefRack4061a
+  };
+
+  if (Object.getOwnPropertyDescriptor(registry, predef)) {
+    define = registry[predef]();
+  }
+
+  return function (event) {
+    controlDefine.node().value = define;
+    controlExport.node().value = predef;
+  }
+}
+
+function predefRack4112 () {
   let contents = [
     { beg:  0, use: 4, label: 'UPS A', highlight: 1 },
     { beg:  4, use: 4, label: 'UPS B', highlight: 1 },
@@ -112,15 +144,56 @@ function visualiseRack4112 (selection) {
     { beg: 41, use: 1, label: 'CRS326-24S+2Q+RM' },
   ];
 
-  //selection.each(function (d) {
-  //  visualiseRackContents(d3.select(this), 42, contents);
-  //});
-
-  let s = JSON.stringify(contents, null, 2);
-  console.log(s)
+  return JSON.stringify(contents, null, 2);
 }
 
+function predefRack4061a () {
+  let contents = [
+    {
+      "beg": 0,
+      "use": 1,
+      "label": "UPS",
+      "comment": "APC SC450RMI1U",
+      "background": "#d47304"
+    },
+    {
+      "beg": 1,
+      "use": 2,
+      "label": "Fibre enclosure",
+      "comment": "72 simplex SC or LHS"
+    },
+    {
+      "beg": 3,
+      "use": 1,
+      "label": "Fibre management",
+      "highlight": 1
+    },
+    {
+      "beg": 4,
+      "use": 1,
+      "label": "CRS354-48G-4S+2Q+RM"
+    },
+    {
+      "beg": 5,
+      "use": 2,
+      "label": "CABLE MANAGEMENT",
+      "highlight": 1
+    },
+    {
+      "beg": 7,
+      "use": 2,
+      "label": "RJ-45 PATCH PANEL",
+      "comment": "48 port CAT6"
+    }
+  ]
+
+  return JSON.stringify(contents, null, 2);
+}
+
+
 function visualiseRackContents (root, units, data) {
+
+  const chartW = 720;
 
   const unitW = 300;
   const unitH = 30;
@@ -144,7 +217,7 @@ function visualiseRackContents (root, units, data) {
 
   let target = root
     .append('svg')
-      .attr('width', '640')
+      .attr('width', chartW)
       .attr('height', sh)
 
   // (debug) background 
@@ -153,7 +226,7 @@ function visualiseRackContents (root, units, data) {
     .append('rect')
       .attr('x', 0)
       .attr('y', 0)
-      .attr('width', '640')
+      .attr('width', chartW)
       .attr('height', sh)
       .attr('fill', '#fff');
 
@@ -235,6 +308,9 @@ function visualiseRackContents (root, units, data) {
                 if (d.disable)
                   return '#3f00ff'
 
+                if (d.background?.match(/#[a-f0-9]{6}$|#[a-f0-9]{3}/i))
+                  return d.background
+
                 return '#333'
               });
 
@@ -253,6 +329,7 @@ function visualiseRackContents (root, units, data) {
               .text(d.label);
 
           let lx = unitW + unitLP;
+          let cx = unitW + unitLP + unitL + unitLP;
 
           if (d.use > 1) {
 
@@ -277,10 +354,23 @@ function visualiseRackContents (root, units, data) {
                 .text(d.use + 'U');
           }
 
+          if (d.comment) {
+            d3.select(this)
+              .append('text')
+                .attr('x', x + cx + unitB + unitN)
+                .attr('y', y + ty)
+                .attr('alignment-baseline', 'middle')
+                .attr('text-anchor', 'left')
+                .attr('font-size', 'small')
+                .attr('font-family', 'monospace')
+                .attr('fill', '#000')
+                .text(d.comment);
+          }
+
           if (d.future) {
             d3.select(this)
               .append('text')
-                .attr('x', x + lx + unitB + unitN)
+                .attr('x', x + cx + unitB + unitN)
                 .attr('y', y + ty)
                 .attr('alignment-baseline', 'middle')
                 .attr('text-anchor', 'left')
@@ -289,6 +379,8 @@ function visualiseRackContents (root, units, data) {
                 .attr('fill', '#000')
                 .text('PLANNED');
           }
+
+
 
         })
 
