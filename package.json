@@ -7,7 +7,7 @@
   },
   "scripts": {
     "client:serve": "parcel source/index.html --no-autoinstall --dist-dir .build/runtime",
-    "client:build": "parcel build source/index.html --no-autoinstall --no-minify --dist-dir build --public-url ./"
+    "client:build": "parcel build source/index.html --no-autoinstall --dist-dir build --public-url ./"
   },
   "browserslist": [
     "last 5 Chrome version"
